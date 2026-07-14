@@ -18,8 +18,8 @@ env:
 
 on:
   workflow_dispatch:
-#  schedule:
-#    - cron: 0 */18 * * *
+  schedule:
+    - cron: 0 */12 * * *
 
 jobs:
   check:
@@ -50,7 +50,7 @@ jobs:
       uses: peter-evans/repository-dispatch@v2
       with:
         token: ${{ github.token }}
-        event-type: Source Code Update
+        event-type: Source Code Update 6.6
 
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2
