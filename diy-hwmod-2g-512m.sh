@@ -16,9 +16,15 @@ if [ ! -d "$OPENWRT_DIR/target/linux/mediatek" ] && [ -d "$PWD/openwrt/target/li
     OPENWRT_DIR="$PWD/openwrt"
 fi
 
-DTS_FILE="$OPENWRT_DIR/target/linux/mediatek/dts/mt7986a-netcore-n60-pro.dts"
+DTS_FILES=(
+    "$OPENWRT_DIR/target/linux/mediatek/dts/mt7986a-netcore-n60-pro.dts"
+    "$OPENWRT_DIR"/target/linux/mediatek/files-*/arch/arm64/boot/dts/mediatek/mt7986a-netcore-n60-pro.dts
+)
 
-if [ -f "$DTS_FILE" ]; then
+DTS_FOUND=0
+for DTS_FILE in "${DTS_FILES[@]}"; do
+    [ -f "$DTS_FILE" ] || continue
+    DTS_FOUND=1
     echo "Found DTS: $DTS_FILE"
 
     if grep -Eq 'memory@40000000[[:space:]]*\{' "$DTS_FILE"; then
@@ -49,8 +55,10 @@ if [ -f "$DTS_FILE" ]; then
     else
         echo "  [WARN] partition@580000 node not found; check DTS manually"
     fi
-else
-    echo "  [WARN] DTS file not found: $DTS_FILE"
+done
+
+if [ "$DTS_FOUND" -eq 0 ]; then
+    echo "  [WARN] DTS file not found; check Netcore N60 Pro DTS path manually"
 fi
 
 for MK_FILE in \
@@ -85,6 +93,37 @@ for MK_FILE in \
         echo "  [OK] IMAGE_SIZE set to ${IMAGE_SIZE}"
     else
         echo "  [WARN] IMAGE_SIZE was not inserted; check netcore_n60-pro block manually"
+    fi
+done
+
+for PLATFORM_FILE in \
+    "$OPENWRT_DIR/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh" \
+    "$OPENWRT_DIR/target/linux/mediatek/mt7986/base-files/lib/upgrade/platform.sh"; do
+
+    if [ ! -f "$PLATFORM_FILE" ]; then
+        continue
+    fi
+
+    echo "Found upgrade platform script: $PLATFORM_FILE"
+
+    if awk '
+        /^[[:space:]]*netcore,n60-pro[|\\]/ { in_device = 1 }
+        in_device && /^[[:space:]]*CI_UBIPART="ubi"[[:space:]]*$/ { ubi = 1 }
+        in_device && /^[[:space:]]*CI_KERNPART="kernel"[[:space:]]*$/ { kernel = 1 }
+        in_device && /^[[:space:]]*CI_ROOTPART="rootfs"[[:space:]]*$/ { rootfs = 1 }
+        in_device && /^[[:space:]]*nand_do_upgrade "\$1"[[:space:]]*$/ { nand = 1 }
+        in_device && /^[[:space:]]*;;[[:space:]]*$/ {
+            done = 1
+            exit(ubi && kernel && rootfs && nand ? 0 : 1)
+        }
+        END {
+            if (!done)
+                exit 1
+        }
+    ' "$PLATFORM_FILE"; then
+        echo "  [OK] Sysupgrade uses ubi/kernel/rootfs via nand_do_upgrade"
+    else
+        echo "  [WARN] Netcore N60 Pro sysupgrade path changed; check platform.sh manually"
     fi
 done
 
