@@ -10,14 +10,26 @@
 # See /LICENSE for more information.
 #
 
+set -e
+
+CONFIG_GENERATE="package/base-files/files/bin/config_generate"
+
 # Modify default IP
-sed -i 's/192.168.1.1/10.0.0.1/g' package/base-files/files/bin/config_generate
+sed -i -E 's#ipad=\$\{ipaddr:-"192\.168\.(1|6)\.1"\}#ipad=${ipaddr:-"10.0.0.1"}#g' "$CONFIG_GENERATE"
+grep -Fq '10.0.0.1' "$CONFIG_GENERATE" || {
+    echo "[ERROR] Failed to set default LAN IP to 10.0.0.1"
+    exit 1
+}
 
 # Modify default theme
 sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
 
 # Modify hostname
-sed -i 's/OpenWrt/N60Pro/g' package/base-files/files/bin/config_generate
+sed -i -E "s#set system\.@system\[-1\]\.hostname='[^']*'#set system.@system[-1].hostname='N60Pro'#" "$CONFIG_GENERATE"
+grep -Fq "hostname='N60Pro'" "$CONFIG_GENERATE" || {
+    echo "[ERROR] Failed to set default hostname to N60Pro"
+    exit 1
+}
 
 # 移除USB网络共享
 sed -i 's/kmod-usb-net-rndis //g' target/linux/mediatek/image/mt7986.mk

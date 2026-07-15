@@ -10,13 +10,11 @@
 # See /LICENSE for more information.
 #
 
-# Uncomment a feed source
-#sed -i 's/^#\(.*helloworld\)/\1/' feeds.conf.default
+set -e
 
-# Add a feed source
+# Use fw876/helloworld as a build-time source feed.
+sed -i '/[[:space:]]helloworld[[:space:]]/d' feeds.conf.default
+if [ -s feeds.conf.default ] && [ "$(tail -c 1 feeds.conf.default)" != "" ]; then
+    echo >>feeds.conf.default
+fi
 echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
-#echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
-
-# Add ADGuardHome source
-git clone https://github.com/rufengsuixing/luci-app-adguardhome package/luci-app-adguardhome
-chmod -R 755 ./package/luci-app-adguardhome/*
