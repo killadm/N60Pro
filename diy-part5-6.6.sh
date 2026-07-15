@@ -31,6 +31,10 @@ grep -Fq "hostname='N60Pro'" "$CONFIG_GENERATE" || {
     exit 1
 }
 
+# Use latest daed/luci-app-daed from QiuSimons.
+rm -rf package/dae package/feeds/*/daed package/feeds/*/luci-app-daed
+git clone --depth=1 https://github.com/QiuSimons/luci-app-daed.git package/dae
+
 # 硬件适配：2GB内存 + 512MB闪存
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 bash "$SCRIPT_DIR/diy-hwmod-2g-512m.sh"
