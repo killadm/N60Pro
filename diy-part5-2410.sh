@@ -31,9 +31,12 @@ grep -Fq "hostname='N60Pro'" "$CONFIG_GENERATE" || {
     exit 1
 }
 
-# Use latest daed/luci-app-daed from QiuSimons.
-rm -rf package/dae package/feeds/*/daed package/feeds/*/luci-app-daed
-git clone --depth=1 https://github.com/QiuSimons/luci-app-daed.git package/dae
+# Use latest luci-app-daed from QiuSimons, keep the tree's compatible daed backend.
+rm -rf package/luci-app-daed package/feeds/*/luci-app-daed
+DAED_LUCI_TMP="$(mktemp -d)"
+git clone --depth=1 https://github.com/QiuSimons/luci-app-daed.git "$DAED_LUCI_TMP/src"
+cp -a "$DAED_LUCI_TMP/src/luci-app-daed" package/luci-app-daed
+rm -rf "$DAED_LUCI_TMP"
 
 # 移除USB网络共享
 sed -i 's/kmod-usb-net-rndis //g' target/linux/mediatek/image/mt7986.mk
