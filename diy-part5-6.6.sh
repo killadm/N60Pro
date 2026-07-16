@@ -31,13 +31,9 @@ grep -Fq "hostname='N60Pro'" "$CONFIG_GENERATE" || {
     exit 1
 }
 
-# Use latest luci-app-daed from QiuSimons, keep the tree's compatible daed backend.
-rm -rf package/luci-app-daed package/feeds/*/luci-app-daed
-DAED_LUCI_TMP="$(mktemp -d)"
-git clone --depth=1 https://github.com/QiuSimons/luci-app-daed.git "$DAED_LUCI_TMP/src"
-cp -a "$DAED_LUCI_TMP/src/luci-app-daed" package/luci-app-daed
-rm -rf "$DAED_LUCI_TMP"
+# Use latest daed stack from kenzok8/openwrt-daede with Go 1.26.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+bash "$SCRIPT_DIR/diy-daede.sh"
 
 # 硬件适配：2GB内存 + 512MB闪存
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 bash "$SCRIPT_DIR/diy-hwmod-2g-512m.sh"
