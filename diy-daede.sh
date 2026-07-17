@@ -48,6 +48,17 @@ cp -a \
     "$DAEDE_TMP/src/vmlinux-btf" \
     package/openwrt-daede/
 
+DAEDE_MENU="package/openwrt-daede/luci-app-daede/root/usr/share/luci/menu.d/luci-app-daede.json"
+if [ ! -f "$DAEDE_MENU" ]; then
+    echo "[ERROR] Failed to locate daede LuCI menu: $DAEDE_MENU"
+    exit 1
+fi
+sed -i 's/"title": "daede"/"title": "DAEDE"/' "$DAEDE_MENU"
+grep -Fq '"title": "DAEDE"' "$DAEDE_MENU" || {
+    echo "[ERROR] Failed to set daede LuCI menu title to DAEDE"
+    exit 1
+}
+
 for pkg in dae daed luci-app-daede vmlinux-btf; do
     if [ ! -f "package/openwrt-daede/$pkg/Makefile" ]; then
         echo "[ERROR] Failed to install openwrt-daede package: $pkg"
