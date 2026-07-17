@@ -1,0 +1,7 @@
+#!/bin/sh
+
+uci -q get argon.@global[0] >/dev/null || uci -q add argon global >/dev/null
+uci -q set argon.@global[0].mode='dark'
+uci -q commit argon
+
+exit 0
