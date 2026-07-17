@@ -59,6 +59,46 @@ grep -Fq '"title": "DAEDE"' "$DAEDE_MENU" || {
     exit 1
 }
 
+mkdir -p package/openwrt-daede/daed/patches
+DAED_SO_MARK_PATCH="package/openwrt-daede/daed/patches/0002-daed-set-explicit-so-mark-from-dae.patch"
+cat > "$DAED_SO_MARK_PATCH" <<'PATCH'
+--- a/dae/utils.go
++++ b/dae/utils.go
+@@ -34,6 +34,20 @@ var (
+ 	EmptyGlobalSection       = `global {}`
+ )
+ 
++func ensureExplicitSoMarkFromDae(globalSection string) string {
++	if strings.Contains(globalSection, "so_mark_from_dae") {
++		return globalSection
++	}
++
++	i := strings.Index(globalSection, "{")
++	if i < 0 {
++		return globalSection
++	}
++
++	rest := strings.TrimLeft(globalSection[i+1:], "\r\n")
++	return globalSection[:i+1] + "\n  so_mark_from_dae: 0\n" + rest
++}
++
+ func NecessaryOutbounds(routing *daeConfig.Routing) (outbounds []string) {
+ 	f := daeConfig.FunctionOrStringToFunction(routing.Fallback)
+ 	outbounds = append(outbounds, f.Name)
+@@ -55,9 +69,10 @@ func ParseConfig(globalSection *string,
+ 	if routingSection == nil {
+ 		routingSection = &EmptyRoutingSection
+ 	}
++	normalizedGlobalSection := ensureExplicitSoMarkFromDae(*globalSection)
+ 	strConfig := strings.Join([]string{
+-		*globalSection,
++		normalizedGlobalSection,
+ 		*dnsSection,
+ 		*routingSection,
+ 		EmptyGroupSection,
+ 		EmptySubscriptionSection,
+PATCH
+
 for pkg in dae daed luci-app-daede vmlinux-btf; do
     if [ ! -f "package/openwrt-daede/$pkg/Makefile" ]; then
         echo "[ERROR] Failed to install openwrt-daede package: $pkg"
