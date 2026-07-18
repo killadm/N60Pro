@@ -1,9 +1,14 @@
 config global
+    # Theme palette
     option primary '#5e72e4'
     option dark_primary '#483d8b'
+
+    # Backdrop effects
     option blur '10'
     option blur_dark '10'
     option transparency '0.5'
     option transparency_dark '0.5'
+
+    # Runtime mode and wallpaper
     option mode 'dark'
     option online_wallpaper 'bing'

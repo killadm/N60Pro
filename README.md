@@ -1,39 +1,42 @@
-**English** | [中文](https://p3terx.com/archives/build-openwrt-with-github-actions.html)
+# N60Pro ImmortalWrt Build
 
-# Actions-OpenWrt
+GitHub Actions build configuration for Netcore N60 Pro / MT7986 firmware based on
+`padavanonly/immortalwrt-mt798x-6.6`.
+Commits to `main` that touch build inputs trigger the matching build workflow
+automatically.
 
-[![LICENSE](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square&label=LICENSE)](https://github.com/P3TERX/Actions-OpenWrt/blob/master/LICENSE)
-![GitHub Stars](https://img.shields.io/github/stars/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Stars&logo=github)
-![GitHub Forks](https://img.shields.io/github/forks/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Forks&logo=github)
+## Build Targets
 
-A template for building OpenWrt with GitHub Actions
+| Workflow | Source branch | Config file | DIY script |
+| --- | --- | --- | --- |
+| `padavanonly-immortalwrt-mt798x-2410-builder` | `2410` | `configs/n60pro-immortalwrt-2410.config` | `scripts/post-feeds-2410.sh` |
+| `padavanonly-immortalwrt-mt798x-6.6-builder` | `openwrt-24.10-6.6` | `configs/n60pro-immortalwrt-6.6.config` | `scripts/post-feeds-6.6.sh` |
 
-## Usage
+## Repository Layout
 
-- Click the [Use this template](https://github.com/P3TERX/Actions-OpenWrt/generate) button to create a new repository.
-- Generate `.config` files using [Lean's OpenWrt](https://github.com/coolsnowwolf/lede) source code. ( You can change it through environment variables in the workflow file. )
-- Push `.config` file to the GitHub repository.
-- Select `Build OpenWrt` on the Actions page.
-- Click the `Run workflow` button.
-- When the build is complete, click the `Artifacts` button in the upper right corner of the Actions page to download the binaries.
+- `.github/workflows/`: build and source-update workflows.
+- `configs/`: build configuration files, grouped by target.
+- `scripts/pre-feeds-helloworld.sh`: feed preparation before `scripts/feeds update`.
+- `scripts/post-feeds-common.sh`: shared post-feed customization.
+- `scripts/post-feeds-*.sh`: branch-specific post-feed customization entry points.
+- `scripts/replace-daed-stack.sh`: replaces the bundled DAEDE stack and Go feed.
+- `scripts/apply-hwmod-2g-512m.sh`: applies the 2GB RAM + 512MB flash hardware adaptation.
+- `files/`: OpenWrt rootfs overlay.
 
-## Tips
+## Config Maintenance
 
-- It may take a long time to create a `.config` file and build the OpenWrt firmware. Thus, before create repository to build your own firmware, you may check out if others have already built it which meet your needs by simply [search `Actions-Openwrt` in GitHub](https://github.com/search?q=Actions-openwrt).
-- Add some meta info of your built firmware (such as firmware architecture and installed packages) to your repository introduction, this will save others' time.
+The `.config` files are intentionally grouped and commented for reviewability:
 
-## Credits
+- target and build system
+- kernel, crypto and hardening
+- MediaTek platform, Wi-Fi and acceleration
+- storage, networking, LuCI and services
+- userland tools, runtime libraries and explicit disabled overrides
 
-- [Microsoft Azure](https://azure.microsoft.com)
-- [GitHub Actions](https://github.com/features/actions)
-- [OpenWrt](https://github.com/openwrt/openwrt)
-- [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)
-- [Mikubill/transfer](https://github.com/Mikubill/transfer)
-- [softprops/action-gh-release](https://github.com/softprops/action-gh-release)
-- [Mattraks/delete-workflow-runs](https://github.com/Mattraks/delete-workflow-runs)
-- [dev-drprasad/delete-older-releases](https://github.com/dev-drprasad/delete-older-releases)
-- [peter-evans/repository-dispatch](https://github.com/peter-evans/repository-dispatch)
+Keep the final disabled-options section after enabled options. Some symbols are
+defined more than once to preserve OpenWrt/Kconfig override behavior.
 
 ## License
 
-[MIT](https://github.com/P3TERX/Actions-OpenWrt/blob/main/LICENSE) © [**P3TERX**](https://p3terx.com)
+This repository keeps the original Actions-OpenWrt MIT license terms. See
+[`LICENSE`](LICENSE).

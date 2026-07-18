@@ -14,7 +14,7 @@ DAEDE_BRANCH="${DAEDE_BRANCH:-main}"
 cd "$OPENWRT_DIR"
 
 if [ ! -x scripts/feeds ] || [ ! -d feeds/packages ]; then
-    echo "[ERROR] Run diy-daede.sh from an OpenWrt buildroot after feeds are updated"
+    echo "[ERROR] Run replace-daed-stack.sh from an OpenWrt buildroot after feeds are updated"
     exit 1
 fi
 

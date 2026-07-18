@@ -1,8 +1,8 @@
 #
 # https://github.com/P3TERX/Actions-OpenWrt
 #
-# File: .github/workflows/openwrt-bulder.yml
-# Description: Build OpenWrt using GitHub Actions
+# File: .github/workflows/padavanonly-immortalwrt-mt798x-2410-builder.yml
+# Description: Build ImmortalWrt using GitHub Actions
 #
 # Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
 #
@@ -13,6 +13,18 @@
 name: padavanonly-immortalwrt-mt798x-2410-builder
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/padavanonly-immortalwrt-mt798x-2410-builder.yml'
+      - 'configs/n60pro-immortalwrt-2410.config'
+      - 'files/**'
+      - 'scripts/apply-hwmod-2g-512m.sh'
+      - 'scripts/post-feeds-2410.sh'
+      - 'scripts/post-feeds-common.sh'
+      - 'scripts/pre-feeds-helloworld.sh'
+      - 'scripts/replace-daed-stack.sh'
   repository_dispatch:
     types: [Source Code Update 2410]
   workflow_dispatch:
@@ -24,12 +36,13 @@ env:
   REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6
   REPO_BRANCH: 2410
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: padavanonly-immortalwrt-mt798x-2410.config
-  DIY_P1_SH: diy-part1.sh
-  DIY_P2_SH: diy-part5-2410.sh
+  CONFIG_FILE: configs/n60pro-immortalwrt-2410.config
+  DIY_P1_SH: scripts/pre-feeds-helloworld.sh
+  DIY_P2_SH: scripts/post-feeds-2410.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
+  UPLOAD_GOFILE: false
   FIRMWARE_TAG: padavanonly-237-mt798x-2410
   TZ: Asia/Shanghai
 
@@ -136,7 +149,10 @@ jobs:
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")-${{ env.FIRMWARE_TAG }}" >> $GITHUB_OUTPUT
         touch release.txt
-        [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
+        GOFILE_URL=""
+        if [ "${UPLOAD_GOFILE:-false}" = "true" ] && [ -n "$GOFILE_URL" ]; then
+          echo "[GoFile]($GOFILE_URL)" >> release.txt
+        fi
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload firmware to release
