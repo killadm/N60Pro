@@ -18,7 +18,11 @@ DEFAULT_HOSTNAME="N60Pro"
 DEFAULT_THEME="luci-theme-argon"
 
 # Modify default IP
-sed -i "s/192.168.1.1/${DEFAULT_LAN_IP}/g" "$CONFIG_GENERATE"
+sed -i -E "s#192\\.168\\.(1|6)\\.1#${DEFAULT_LAN_IP}#g" "$CONFIG_GENERATE"
+grep -Fq "$DEFAULT_LAN_IP" "$CONFIG_GENERATE" || {
+    echo "[ERROR] Failed to set default LAN IP to ${DEFAULT_LAN_IP}"
+    exit 1
+}
 
 # Modify default theme
 sed -i "s/luci-theme-bootstrap/${DEFAULT_THEME}/g" feeds/luci/collections/luci/Makefile
